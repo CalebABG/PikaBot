@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -16,6 +17,7 @@ namespace PikaBot
         private DiscordClient _discord;
         private CommandsNextModule _commands;
         private InteractivityModule _interactivity;
+        private HttpClient _httpClient;
 
         public async Task InitBot(string[] args)
         {
@@ -40,6 +42,11 @@ namespace PikaBot
                     PaginationTimeout = TimeSpan.FromSeconds(30),
                     Timeout = TimeSpan.FromSeconds(30)
                 });
+                
+                _httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(30),
+                };
 
                 var deps = BuildDeps();
                 _commands = _discord.UseCommandsNext(new CommandsNextConfiguration
@@ -48,9 +55,7 @@ namespace PikaBot
                     Dependencies = deps
                 });
 
-                var types = GetTypes();
-                foreach (var t in types)
-                    _commands.RegisterCommands(t);
+                RegisterCommandClasses();
 
                 await RunAsync(args);
             }
@@ -60,11 +65,18 @@ namespace PikaBot
             }
         }
 
+        private void RegisterCommandClasses()
+        {
+            var types = GetTypes();
+            foreach (var t in types)
+                _commands.RegisterCommands(t);
+        }
+
         private Type[] GetTypes()
         {
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => typeof(ICommandT).IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
+                .Where(p => typeof(IRegisterCommandsClass).IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
 
             return types as Type[] ?? types.ToArray();
         }
@@ -86,6 +98,7 @@ namespace PikaBot
             deps.AddInstance(_interactivity) // Add interactivity
                 .AddInstance(_cts) // Add the cancellation token
                 .AddInstance(_config) // Add our config
+                .AddInstance(_httpClient) // Add http client
                 .AddInstance(_discord); // Add the discord client
 
             return deps.Build();

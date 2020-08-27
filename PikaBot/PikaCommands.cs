@@ -12,17 +12,8 @@ using Newtonsoft.Json;
 
 namespace PikaBot
 {
-    public class PikaCommands : ICommandT
+    public class PikaCommands : IRegisterCommandsClass
     {
-        [Command("alive")]
-        [Description("Simple command to test if the bot is running!")]
-        public async Task Alive(CommandContext ctx)
-        {
-            await ctx.TriggerTypingAsync();
-
-            await ctx.RespondAsync("I'm alive!");
-        }
-
         [Command("fact")]
         [Description("Gets a random fact or the fact of the day!")]
         public async Task Fact(CommandContext context, string verb = "random")
@@ -32,7 +23,7 @@ namespace PikaBot
             try
             {
                 string url = $"https://uselessfacts.jsph.pl/{(verb == "today" ? verb : "random")}.json?language=en";
-                var randomFact = await GetFact(url);
+                var randomFact = await GetFact(url, context.Dependencies.GetDependency<HttpClient>());
                 await context.RespondAsync(embed: new DiscordEmbedBuilder()
                     .WithColor(new DiscordColor(0xB29830))
                     .WithFooter("Facts from: 'https://uselessfacts.jsph.pl'")
@@ -44,19 +35,18 @@ namespace PikaBot
             }
         }
 
-        private async Task<string?> GetFact(string url)
+        private async Task<string?> GetFact(string url, HttpClient client)
         {
             string? fact = null;
-
-            var client = new HttpClient {Timeout = TimeSpan.FromSeconds(30)};
-
-            var todayResponse = await client.GetAsync(url);
-            if (!todayResponse.IsSuccessStatusCode) return fact;
+            
+            var todayResponse = await client.GetAsync(url, HttpCompletionOption.ResponseContentRead);
+            if (!todayResponse.IsSuccessStatusCode) 
+                return fact;
 
             var responseData = await todayResponse.Content.ReadAsStringAsync();
-            var jsonbj = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseData);
+            var responseDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseData);
 
-            fact = jsonbj["text"];
+            fact = responseDictionary["text"];
 
             return fact;
         }
@@ -72,7 +62,7 @@ namespace PikaBot
             {
                 verb = verb.ToLower();
 
-                string errorMsg = "Sorry :( - couldn't do that for ya boss";
+                string errorMsg = "Sorry :( - couldn't do that for ya. Woof!";
 
                 string greetingBase = "Greetings ";
                 string greeting = $"{greetingBase}, {member.DisplayName}!";
@@ -83,7 +73,7 @@ namespace PikaBot
                     {
                         case "dm":
                             await member.SendMessageAsync(greeting);
-                            await context.Channel.SendMessageAsync("Sent message boss");
+                            await context.Channel.SendMessageAsync("Sent greeting. Woof!");
                             break;
 
                         case "channel":
@@ -106,8 +96,8 @@ namespace PikaBot
             var dispName = member.DisplayName.ToLower();
             var usrName = member.Username.ToLower();
 
-            if (name == dispName ||
-                name == usrName)
+            if (name.Equals(dispName) ||
+                name.Equals(usrName))
             {
                 return true;
             }
