@@ -18,3 +18,7 @@
    4. Then boom! You're all set with securely storing your Discord token for use in the application! Here's the docs for [Microsoft's Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-3.1&tabs=windows#remove-a-single-secret) for reference.
 5. The last thing to do is to make sure you've added your Bot to a discord channel as well as giving the Bot any necessary permissions it may need. You can refer to the [Discord Docs for making an app](https://discord.com/developers/docs/intro) or Google for how to set those up :)
 6. Have fun!!
+
+## Project Dependencies
+1. [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus)
+    - This awesome dependency is a C# library which wraps the Discord API and makes it incredibly easy to make Bots! Huge shout out to the creators and everyone who has contributed to that project! 
