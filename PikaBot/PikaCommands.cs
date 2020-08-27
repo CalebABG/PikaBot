@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace PikaBot
 {
-    public class PikaCommands : IRegisterCommandsClass
+    public class PikaCommands : IRegisterCommands
     {
         [Command("fact")]
         [Description("Gets a random fact or the fact of the day!")]

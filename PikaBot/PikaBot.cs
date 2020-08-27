@@ -78,7 +78,7 @@ namespace PikaBot
         {
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => typeof(IRegisterCommandsClass).IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
+                .Where(p => typeof(IRegisterCommands).IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
 
             return types as Type[] ?? types.ToArray();
         }
