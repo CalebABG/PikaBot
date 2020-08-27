@@ -12,6 +12,8 @@ namespace PikaBot
 {
     public class PikaBot
     {
+        private const string PikaBotDiscordCommandPrefix = "!";
+        
         private CancellationTokenSource _cts = new CancellationTokenSource();
         private IConfigurationRoot _config;
         private DiscordClient _discord;
@@ -51,7 +53,7 @@ namespace PikaBot
                 var deps = BuildDeps();
                 _commands = _discord.UseCommandsNext(new CommandsNextConfiguration
                 {
-                    StringPrefix = _config["discord:prefix"],
+                    StringPrefix = PikaBotDiscordCommandPrefix,
                     Dependencies = deps
                 });
 
